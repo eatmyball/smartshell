@@ -1,0 +1,195 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context=".PatientActivity" >
+
+    <LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:orientation="vertical" >
+		
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<EditText
+			android:id="@+id/pt_tbxBarcode"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:inputType="text"
+			android:layout_marginLeft="5dp"
+			android:layout_weight="4"
+			android:ems="10" >
+		</EditText>
+		    <Button
+		        android:id="@+id/pt_btn_Deal"
+		        android:layout_width="0dp"
+		        android:layout_height="wrap_content"
+		        android:background="@color/background" 
+		        android:textColor="#ffffff"
+		        android:textSize="24sp"
+				android:layout_weight="1"
+		        android:layout_marginLeft="5dp"
+		        android:text="@string/btnDeal" />
+		<Button
+			android:id="@+id/pt_btn_Scan"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:background="@color/background"
+			android:textColor="#ffffff"
+			android:textSize="24sp"
+			android:layout_weight="1"
+			android:layout_marginRight="5dp"
+			android:layout_marginLeft="5dp"
+			android:text="扫描" />
+	</LinearLayout>
+		    
+	    <TextView
+	         android:id="@+id/pt_BillNo"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView
+	         android:id="@+id/pt_FromLocation"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_ToLocation"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_PatientName"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_SickBed"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_PatientNumber"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_TargetType"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_TransferMode"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_EmergencyLevel"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_TransferEquipment"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_ETA"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+	     <TextView         
+	         android:id="@+id/pt_Note"
+	         android:textSize="20dip" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="" />
+		<TextView
+			android:id="@+id/pt_OriginBillNo"
+			android:textSize="20dip"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="" />
+	
+	     <LinearLayout
+	         android:layout_width="fill_parent"
+	         android:layout_height="match_parent"
+	         android:layout_weight="8"	         
+	         android:orientation="horizontal" >
+	
+	         <Button
+	        android:id="@+id/pt_btn_Delay"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@color/background" 
+	        android:textColor="#ffffff"
+	        android:textSize="24sp"
+	        android:layout_weight="1"
+	        android:layout_gravity="bottom"
+	        android:layout_marginRight="5dp"
+	        android:text="@string/btnDelay" />
+	         <Button
+	        android:id="@+id/pt_btn_Cancel"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@color/background" 
+	        android:textColor="#ffffff"
+	        android:textSize="24sp"
+	        android:layout_weight="1"
+	        android:layout_gravity="bottom"
+	        android:layout_marginRight="5dp"
+	        android:text="@string/btnCancel" />
+	         <Button
+	        android:id="@+id/pt_btn_Wait"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@color/background" 
+	        android:textColor="#ffffff"
+	        android:textSize="24sp"
+	        android:layout_weight="1"
+	        android:layout_gravity="bottom"
+	        android:layout_marginRight="5dp"
+	        android:text="@string/btnWait" />
+	         <Button
+	        android:id="@+id/pt_btn_Update"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@color/background" 
+	        android:textColor="#ffffff"
+	        android:textSize="24sp"
+	        android:layout_weight="1"
+	        android:layout_gravity="bottom"
+	        android:layout_marginRight="5dp"
+	        android:text="@string/btnUpdate" />
+	         <Button
+	        android:id="@+id/pt_btn_Delegate"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@color/background" 
+	        android:textColor="#ffffff"
+	        android:layout_weight="1"
+	        android:layout_gravity="bottom"
+	        android:textSize="24sp"
+	        android:text="@string/btnDelegate" />
+	     </LinearLayout>
+	</LinearLayout>
+
+</RelativeLayout>

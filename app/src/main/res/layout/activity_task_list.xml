@@ -1,0 +1,147 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".TaskListActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/pt_tbxBarcode"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="4"
+            android:ems="10"
+            android:inputType="textNoSuggestions"></EditText>
+
+        <Button
+            android:id="@+id/pt_btn_Deal"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:background="@color/background"
+            android:text="@string/btnDeal"
+            android:textColor="#ffffff"
+            android:textSize="16sp"></Button>
+
+        <Button
+            android:id="@+id/pt_btn_Scan"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:background="@color/background"
+            android:text="扫描"
+            android:textColor="#ffffff"
+            android:textSize="16sp"></Button>
+        <Button
+            android:id="@+id/btnNewDrugTask"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:background="@color/background"
+            android:text="新建"
+            android:textColor="#ffffff"
+            android:textSize="16sp"></Button>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/pt_btn_GetTask"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:background="@color/background"
+            android:text="刷新"
+            android:textColor="#ffffff"
+            android:textSize="16sp"></Button>
+
+        <Button
+            android:id="@+id/pt_btn_ViewExecuting"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:background="@color/background"
+            android:text="执行中"
+            android:textColor="#ffffff"
+            android:textSize="16sp"></Button>
+
+        <Button
+            android:id="@+id/pt_btn_ViewAccepted"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:background="@color/background"
+            android:text="已接受"
+            android:textColor="#ffffff"
+            android:textSize="16sp"></Button>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/UserInfo"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dip"
+        android:singleLine="true"
+        android:text="用户名："
+        android:textSize="20sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tbxMsg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="执行中任务："
+        android:textSize="20sp"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/tasklist_lvwExecutingTask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:cacheColorHint="#00000000"
+        android:fadeScrollbars="false" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="已接受任务："
+        android:textSize="20sp"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/tasklist_lvwAcceptedTask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:cacheColorHint="#00000000"
+        android:fadeScrollbars="false" />
+
+</LinearLayout>
