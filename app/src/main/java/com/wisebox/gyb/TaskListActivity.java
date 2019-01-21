@@ -5,13 +5,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimerTask;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -19,6 +23,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EncodingUtils;
 import org.apache.http.util.EntityUtils;
 
+import com.clj.fastble.callback.BleScanCallback;
+import com.clj.fastble.data.BleDevice;
+import com.google.gson.JsonObject;
+import com.wisebox.gyb.BLE.BLEUtils;
+import com.wisebox.gyb.BLE.BleTimeTask;
 import com.wisebox.gyb.ScreenObserver.ScreenStateListener;
 
 import android.media.AudioManager;
@@ -41,6 +50,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -90,6 +100,10 @@ public class TaskListActivity extends Activity implements OnClickListener {
 	 * 确保关闭程序后，停止线程
 	 */
 	private boolean isDestroy;
+
+	private boolean mIsSupportBle = false;
+
+	private BleTimeTask myBleTask;
 
 	// 申请设备电源锁
 	@SuppressLint("InvalidWakeLockTag")
@@ -160,9 +174,22 @@ public class TaskListActivity extends Activity implements OnClickListener {
 				Bind2ListView();
 			}
 		}
-
+		//初始化蓝牙
+		BLEUtils.init();
+		mIsSupportBle = BLEUtils.getInstance().isSupportBle();
+		if(mIsSupportBle) {
+			BLEUtils.getInstance().enableBluetooth();
+		}
 		// 启动定时刷新任务的进程
 		new Thread(new ThreadShow()).start();
+		//蓝牙定时器任务
+		myBleTask = new BleTimeTask(15000, new TimerTask() {
+			@Override
+			public void run() {
+				bleTaskHandler.sendEmptyMessage(999);
+			}
+		});
+		myBleTask.start();
 
 		acquireWakeLock();
 		isDestroy = false;
@@ -840,7 +867,9 @@ public class TaskListActivity extends Activity implements OnClickListener {
 
 	public void onDestroy() {
 		super.onDestroy();
-
+		//蓝牙定时任务停止
+		myBleTask.stop();
+		BLEUtils.getInstance().destroy();
 		releaseWakeLock();
 		isDestroy = true;
 		// throw new NullPointerException();
@@ -1601,7 +1630,7 @@ public class TaskListActivity extends Activity implements OnClickListener {
 		public void run() {
 			while (!isDestroy) {
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(30000);
 					// 从服务器得到任务列表
 					if (bReceiveNewTask) {
 						if (GetTaskList()) {
@@ -1676,4 +1705,47 @@ public class TaskListActivity extends Activity implements OnClickListener {
 		};
 		volumeChangeThread.start();
 	}
+
+	//扫描蓝牙设备，发现指定设备后报告到系统后台
+	private void scanBleandReport() {
+		BLEUtils.scan(new BleScanCallback() {
+			@Override
+			public void onScanFinished(List<BleDevice> scanResultList) {
+				List<BleDevice> tempList = new ArrayList(Arrays.asList(new Object[scanResultList.size()]));
+				Collections.copy(tempList, scanResultList);
+				for(int index = 0; index < tempList.size(); index++) {
+					BleDevice item = tempList.get(index);
+					String itemMac = item.getMac();
+					Log.d("BLE SCAN", "item mac is:" + itemMac);
+					for (String mac:MyApp.getHospitalBlies()) {
+						if(mac.equals(itemMac)) {
+							Log.e("BLE SCAN", "BLE mapped:"+mac);
+						}
+					}
+				}
+				tempList.clear();
+				Log.d("BLE SCAN", "Ble Scan finished");
+			}
+
+			@Override
+			public void onScanStarted(boolean success) {
+				Log.d("BLE SCAN", "Ble Scan started");
+			}
+
+			@Override
+			public void onScanning(BleDevice bleDevice) {
+				String msg = "["+bleDevice.getName()+":"+bleDevice.getMac()+"]";
+				Log.d("BLE SCAN", "Device discovered:" + msg + bleDevice.toString());
+			}
+		});
+	}
+
+	private Handler bleTaskHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			if(msg.what == 999) {
+				scanBleandReport();
+			}
+		}
+	};
 }

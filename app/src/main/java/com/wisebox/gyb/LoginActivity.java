@@ -113,7 +113,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 			tbxPassword.setText(password);
 
 			cb.setChecked(true);
-			Toast.makeText(this, "开启自动登录", 1);
+			Toast.makeText(this, "开启自动登录", Toast.LENGTH_SHORT);
 			Login();
 		}
 	}
