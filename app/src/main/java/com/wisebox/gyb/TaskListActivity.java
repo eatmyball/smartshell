@@ -22,6 +22,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EncodingUtils;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
@@ -29,6 +31,8 @@ import com.google.gson.JsonObject;
 import com.wisebox.gyb.BLE.BLEUtils;
 import com.wisebox.gyb.BLE.BleTimeTask;
 import com.wisebox.gyb.ScreenObserver.ScreenStateListener;
+import com.wisebox.gyb.utils.ParamsBuildUtils;
+import com.wisebox.gyb.utils.gsonObj.DeptMacJson;
 
 import android.media.AudioManager;
 import android.net.Uri;
@@ -64,6 +68,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 @SuppressLint({ "ShowToast", "DefaultLocale", "HandlerLeak" })
 public class TaskListActivity extends Activity implements OnClickListener {
@@ -183,7 +193,7 @@ public class TaskListActivity extends Activity implements OnClickListener {
 		// 启动定时刷新任务的进程
 		new Thread(new ThreadShow()).start();
 		//蓝牙定时器任务
-		myBleTask = new BleTimeTask(15000, new TimerTask() {
+		myBleTask = new BleTimeTask(20000, new TimerTask() {
 			@Override
 			public void run() {
 				bleTaskHandler.sendEmptyMessage(999);
@@ -1711,20 +1721,7 @@ public class TaskListActivity extends Activity implements OnClickListener {
 		BLEUtils.scan(new BleScanCallback() {
 			@Override
 			public void onScanFinished(List<BleDevice> scanResultList) {
-				List<BleDevice> tempList = new ArrayList(Arrays.asList(new Object[scanResultList.size()]));
-				Collections.copy(tempList, scanResultList);
-				for(int index = 0; index < tempList.size(); index++) {
-					BleDevice item = tempList.get(index);
-					String itemMac = item.getMac();
-					Log.d("BLE SCAN", "item mac is:" + itemMac);
-					for (String mac:MyApp.getHospitalBlies()) {
-						if(mac.equals(itemMac)) {
-							Log.e("BLE SCAN", "BLE mapped:"+mac);
-						}
-					}
-				}
-				tempList.clear();
-				Log.d("BLE SCAN", "Ble Scan finished");
+
 			}
 
 			@Override
@@ -1734,10 +1731,43 @@ public class TaskListActivity extends Activity implements OnClickListener {
 
 			@Override
 			public void onScanning(BleDevice bleDevice) {
-				String msg = "["+bleDevice.getName()+":"+bleDevice.getMac()+"]";
-				Log.d("BLE SCAN", "Device discovered:" + msg + bleDevice.toString());
+				String mac = bleDevice.getMac();
+				Log.d("BLE SCAN", "discovered BLE MAC is:" + mac);
+				for (DeptMacJson item:MyApp.getHospitalMacList()) {
+
+					if(item.Mac.equals(mac)) {
+						Log.d("BLE SCAN", "BLE mapped:"+mac);
+						//上报信息
+						reportMac(item);
+					}
+				}
 			}
 		});
+	}
+	//上报mac数据
+	private void reportMac(DeptMacJson macJson){
+		try {
+			OkHttpClient client = new OkHttpClient();
+			String url = GlobalInfo.NEW_API_URL + "wsformicromsg.asmx?wsdl";
+			JSONObject obj = new JSONObject();
+			obj.put("TransferCode", GlobalInfo.m_LoginAccount);
+			obj.put("DeptCode", macJson.PropCode);
+			obj.put("DeptName", macJson.PropName);
+			obj.put("MacAddress", macJson.Mac);
+			RequestBody body = RequestBody.create(MediaType.get("text/xml"), ParamsBuildUtils.bodyBuild("NewDeptBtMac",obj.toString()));
+			Request request = new Request.Builder()
+					.url(url)
+					.post(body)
+					.build();
+			Response response = client.newCall(request).execute();
+			if(response.isSuccessful()) {
+				Log.e("REPORT","MAC info commit success!!");
+			}
+		}catch (JSONException exception) {
+
+		}catch (IOException exception) {
+
+		}
 	}
 
 	private Handler bleTaskHandler = new Handler() {
