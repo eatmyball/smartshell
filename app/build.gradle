@@ -1,20 +1,41 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        debug {
+            keyAlias 'smartshell'
+            keyPassword '123456'
+            storeFile file('C:/Users/Hank/AndroidStudioProjects/smartshell/smartshell.jks')
+            storePassword '123456'
+        }
+        release {
+            keyAlias 'smartshell'
+            keyPassword '123456'
+            storeFile file('C:/Users/Hank/AndroidStudioProjects/smartshell/smartshell.jks')
+            storePassword '123456'
+        }
+    }
     compileSdkVersion 17
     buildToolsVersion "27.0.3"
     android { compileOptions.encoding = "UTF-8" }
-
     defaultConfig {
         applicationId "com.wisebox.gyb"
         minSdkVersion 16
         targetSdkVersion 16
     }
-
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+            renderscriptDebuggable false
+            pseudoLocalesEnabled true
+            zipAlignEnabled true
+        }
+        debug {
+            signingConfig signingConfigs.release
         }
     }
 }

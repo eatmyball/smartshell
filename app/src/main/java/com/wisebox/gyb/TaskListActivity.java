@@ -115,6 +115,8 @@ public class TaskListActivity extends Activity implements OnClickListener {
 
 	private BleTimeTask myBleTask;
 
+	private String lastMac = "";
+
 	// 申请设备电源锁
 	@SuppressLint("InvalidWakeLockTag")
     private void acquireWakeLock() {
@@ -1734,8 +1736,9 @@ public class TaskListActivity extends Activity implements OnClickListener {
 				String mac = bleDevice.getMac();
 				Log.d("BLE SCAN", "discovered BLE MAC is:" + mac);
 				for (DeptMacJson item:MyApp.getHospitalMacList()) {
-
-					if(item.Mac.equals(mac)) {
+					String itemMac = item.Mac;
+					//上报已匹配的蓝牙地址，且蓝牙信息不能为上次已经上报过的。
+					if(itemMac.equals(mac)&&(!itemMac.equals(lastMac))) {
 						Log.d("BLE SCAN", "BLE mapped:"+mac);
 						//上报信息
 						reportMac(item);
@@ -1762,6 +1765,8 @@ public class TaskListActivity extends Activity implements OnClickListener {
 			Response response = client.newCall(request).execute();
 			if(response.isSuccessful()) {
 				Log.e("REPORT","MAC info commit success!!");
+				//记录最后一次上报过的蓝牙地址
+				lastMac = macJson.Mac;
 			}
 		}catch (JSONException exception) {
 
