@@ -9,14 +9,18 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.wisebox.gyb.AccessServer.OnReceiveDataListener;
 import com.wisebox.gyb.utils.ParamsBuildUtils;
 import com.wisebox.gyb.utils.XmlParseUtil;
 import com.wisebox.gyb.utils.gsonObj.DeptMacJson;
 import com.wisebox.gyb.utils.gsonObj.MacAddrJson;
+import com.wisebox.gyb.utils.gsonObj.UserInfoJson;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -32,6 +36,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.ContactsContract.Data;
 import android.text.TextUtils;
@@ -49,6 +54,8 @@ import android.widget.Toast;
 
 import javax.xml.validation.Validator;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -67,10 +74,13 @@ public class LoginActivity extends Activity implements OnClickListener,
 	private static final int MESSAGETYPE_EXCEPTION = 0x0003;
 	private EditText tbxAccount, tbxPassword;
 	private CheckBox cbxAutoLogin;
-	private String strResponse, strPhone, strPassword;
+	private String strResponse, strPhone, strPassword, strAccount;
 
 	// private AccessServer pr=new AccessServer();
-	/** Called when the activity is first created. */
+
+	/**
+	 * Called when the activity is first created.
+	 */
 	@SuppressLint("ShowToast")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -130,19 +140,19 @@ public class LoginActivity extends Activity implements OnClickListener,
 
 			cb.setChecked(true);
 			Toast.makeText(this, "开启自动登录", Toast.LENGTH_SHORT);
-			Login();
+			onLogin();
 		}
 	}
 
 	/*
 	 * // HOME
-	 * 
+	 *
 	 * @Override public void onAttachedToWindow() {
 	 * this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
 	 * super.onAttachedToWindow(); }
-	 * 
+	 *
 	 * // 下拉
-	 * 
+	 *
 	 * @Override public void onWindowFocusChanged(boolean hasFocus) {
 	 * super.onWindowFocusChanged(hasFocus); try { Object service =
 	 * getSystemService("statusbar"); Class<?> statusbarManager =
@@ -156,7 +166,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 		String strLocalPhoneList = "";
 		Uri uri = Uri.parse("content://com.android.contacts/contacts"); // 访问raw_contacts表
 		ContentResolver resolver = this.getBaseContext().getContentResolver();
-		Cursor cursor = resolver.query(uri, new String[] { Data._ID }, null,
+		Cursor cursor = resolver.query(uri, new String[]{Data._ID}, null,
 				null, null); // 获得_id属性
 		while (cursor.moveToNext()) {
 			StringBuilder buf = new StringBuilder();
@@ -164,8 +174,8 @@ public class LoginActivity extends Activity implements OnClickListener,
 			buf.append("id=" + id);
 			uri = Uri.parse("content://com.android.contacts/contacts/" + id
 					+ "/data"); // 如果要获得data表中某个id对应的数据，则URI为content://com.android.contacts/contacts/#/data
-			Cursor cursor2 = resolver.query(uri, new String[] { Data.DATA1,
-					Data.MIMETYPE }, null, null, null); // data1存储各个记录的总数据，mimetype存放记录的类型，如电话、email等
+			Cursor cursor2 = resolver.query(uri, new String[]{Data.DATA1,
+					Data.MIMETYPE}, null, null, null); // data1存储各个记录的总数据，mimetype存放记录的类型，如电话、email等
 			String strN = "", strP = "";
 			while (cursor2.moveToNext()) {
 				String data = cursor2
@@ -190,13 +200,13 @@ public class LoginActivity extends Activity implements OnClickListener,
 
 	/**
 	 * 使用SharedPreferences保存用户登录信息
-	 * 
+	 *
 	 * @param context
 	 * @param username
 	 * @param password
 	 */
 	public static void saveLoginInfo(Context context, String username,
-			String password, String strSaved) {
+									 String password, String strSaved) {
 		// 获取SharedPreferences对象
 		SharedPreferences sharedPre = context.getSharedPreferences("config",
 				Context.MODE_PRIVATE);
@@ -210,19 +220,20 @@ public class LoginActivity extends Activity implements OnClickListener,
 		editor.commit();
 	}
 
-	private void Login() {
-		try {
-		strPhone = testReadAll("0本机");
-		} catch (Exception exp1) {
-			new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-			.setMessage("异常:"+exp1.getMessage()).setPositiveButton("确定", null).show();
-		}
-		
-		if (strPhone.length() == 0)
-			strPhone = "";
-		else
-			strPhone = strPhone.replace(" ", "");
+	private void onLogin() {
 
+//		try {
+//			strPhone = testReadAll("0本机");
+//		} catch (Exception exp1) {
+//			new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
+//					.setMessage("异常:" + exp1.getMessage()).setPositiveButton("确定", null).show();
+//		}
+//		if (strPhone.length() == 0) {
+//			strPhone = "";
+//		}else {
+//			strPhone = strPhone.replace(" ", "");
+//		}
+		strPhone = "";
 		GlobalInfo.m_LoginAccount = ((EditText) LoginActivity.this
 				.findViewById(R.id.tbxAccount)).getText().toString();
 		strPassword = ((EditText) LoginActivity.this
@@ -234,14 +245,13 @@ public class LoginActivity extends Activity implements OnClickListener,
 			tbxAccount.requestFocus();
 			return;
 		}
-
 		if (strPassword.length() <= 0) {
 			Toast.makeText(getApplicationContext(), "请输入密码", Toast.LENGTH_SHORT)
 					.show();
 			tbxPassword.requestFocus();
 			return;
 		}
-
+		progressDialog = ProgressDialog.show(LoginActivity.this, "登录", "正在登录中,请稍候！");
 		StringBuilder sbUploadData = new StringBuilder("");
 		sbUploadData.append(GlobalInfo.m_LoginAccount);
 		sbUploadData.append(GlobalInfo.m_SplitString);
@@ -252,113 +262,105 @@ public class LoginActivity extends Activity implements OnClickListener,
 
 		String strURI = "http://" + GlobalInfo.m_ServerIP
 				+ "/appLogin.aspx?Method=Login&Value=" + strUploadData;
-		HttpPost httpRequest = new HttpPost(strURI);
-		try {
-			HttpResponse httpResponse = new DefaultHttpClient()
-					.execute(httpRequest);
-
-			int nStatus = httpResponse.getStatusLine().getStatusCode();
-			if (nStatus == 200) {
-				strResponse = EntityUtils.toString(httpResponse.getEntity())
-						.trim();
-				if (strResponse.startsWith("SUCCESS:")) {
-					//获取医院蓝牙设备地址
-					getHospitalMac();
-					strResponse = strResponse.substring(
-							strResponse.indexOf("SUCCESS:") + 8,
-							strResponse.indexOf("SUCCESSEND"));
-					String stra[] = strResponse.split(GlobalInfo.m_SplitString);
-					GlobalInfo.m_PropID = stra[0];
-					GlobalInfo.m_RoleCode = stra[1];
-					GlobalInfo.m_RoleName = stra[2];
-					GlobalInfo.m_PersonName = stra[3];
-					GlobalInfo.m_DeptName = stra[4];
-					GlobalInfo.m_DeptID = stra[5];
-					GlobalInfo.m_VerifyCode = stra[6];
-					GlobalInfo.m_OnOffDutyState = stra[7];
-
-					if (GlobalInfo.m_RoleCode.toLowerCase().equals(
-							"hosschedule")) {
-						// GetPhoneList();
+		OkHttpClient okHttpClient = new OkHttpClient();
+		Request request = new Request.Builder().url(strURI).get().build();
+			okHttpClient.newCall(request).enqueue(new Callback() {
+				@Override
+				public void onFailure(Call call, IOException e) {
+					if(progressDialog !=null) {
+						progressDialog.dismiss();
 					}
-
-					FileService fs = new FileService(LoginActivity.this);
-					try {
-						fs.save(GlobalInfo.m_UserInfoFileName,
-								GlobalInfo.m_LoginAccount
-										+ GlobalInfo.m_SplitString
-										+ GlobalInfo.m_PersonName);
-					} catch (Exception exp1) {
-
-					}
-					String strSaved = "0";
-					if (cbxAutoLogin.isChecked()) {
-						strSaved = "1";
-					}
-
-					saveLoginInfo(LoginActivity.this,
-							GlobalInfo.m_LoginAccount, strPassword, strSaved);
-
-					Toast.makeText(getApplicationContext(), strPhone + " 登录成功",
-							Toast.LENGTH_SHORT).show();
-					Intent i = new Intent(LoginActivity.this,
-							TaskListActivity.class);
-					/*
-					 * if (GlobalInfo.m_RoleCode.toLowerCase().equals(
-					 * "hosschedule")) i = new Intent(LoginActivity.this,
-					 * MainMenuActivity.class);
-					 */
-					startActivity(i);
-
-				} else if (strResponse.startsWith("ERROR")) {
-					strResponse = strResponse.substring(
-							strResponse.indexOf("ERROR:") + 8,
-							strResponse.indexOf("ERROREND"));
-					new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-							.setMessage("错误："+strResponse)
-							.setPositiveButton("确定", null).show();
 				}
-			} else {
-				new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-				.setMessage("错误:"+nStatus).setPositiveButton("确定", null).show();
-			}
-		} catch (Exception exp1) {
-			new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-			.setMessage("异常:"+exp1.getMessage()).setPositiveButton("确定", null).show();
-		}
 
-		/*
-		 * progressDialog = ProgressDialog.show(LoginActivity.this, "登录",
-		 * "正在链接服务器,请稍候！");
-		 * 
-		 * new Thread() { public void run() { try {
-		 * 
-		 * StringBuilder sbUploadData = new StringBuilder("");
-		 * sbUploadData.append(GlobalInfo.m_LoginAccount);
-		 * sbUploadData.append(GlobalInfo.m_SplitString);
-		 * sbUploadData.append(strPassword);
-		 * sbUploadData.append(GlobalInfo.m_SplitString);
-		 * sbUploadData.append(strPhone); String strUploadData =
-		 * sbUploadData.toString();
-		 * 
-		 * String strURI = "http://" + GlobalInfo.m_ServerIP +
-		 * "/appLogin.aspx?Method=Login&Value=" + strUploadData; HttpPost
-		 * httpRequest = new HttpPost(strURI); HttpResponse httpResponse = new
-		 * DefaultHttpClient() .execute(httpRequest);
-		 * 
-		 * int nStatus = httpResponse.getStatusLine().getStatusCode(); if
-		 * (nStatus == 200) { strResponse = EntityUtils.toString(
-		 * httpResponse.getEntity()).trim(); Message msg_listData = new
-		 * Message(); msg_listData.what = MESSAGETYPE_SUCCESS;
-		 * handler.sendMessage(msg_listData); } else { Message msg_listData =
-		 * new Message(); msg_listData.what = MESSAGETYPE_ERROR;
-		 * handler.sendMessage(msg_listData); } } catch (Exception exp1) {
-		 * Message msg_listData = new Message(); msg_listData.what =
-		 * MESSAGETYPE_EXCEPTION; handler.sendMessage(msg_listData);
-		 * 
-		 * } } }.start();
-		 */
+				@Override
+				public void onResponse(Call call, Response response) {
+
+					try {
+						Thread.sleep(500);
+						if(progressDialog !=null) {
+							progressDialog.dismiss();
+						}
+						if (response.isSuccessful()) {
+							strResponse = response.body().string().trim();
+							if (strResponse.startsWith("SUCCESS:")) {
+								strResponse = strResponse.substring(
+										strResponse.indexOf("SUCCESS:") + 8,
+										strResponse.indexOf("SUCCESSEND"));
+								String stra[] = strResponse.split(GlobalInfo.m_SplitString);
+								GlobalInfo.m_PropID = stra[0];
+								GlobalInfo.m_RoleCode = stra[1];
+								GlobalInfo.m_RoleName = stra[2];
+								GlobalInfo.m_PersonName = stra[3];
+								GlobalInfo.m_DeptName = stra[4];
+								GlobalInfo.m_DeptID = stra[5];
+								GlobalInfo.m_VerifyCode = stra[6];
+								GlobalInfo.m_DeptCode = GlobalInfo.m_VerifyCode;
+								GlobalInfo.m_OnOffDutyState = stra[7];
+
+								if (GlobalInfo.m_RoleCode.toLowerCase().equals(
+										"hosschedule")) {
+									// GetPhoneList();
+								}
+
+								FileService fs = new FileService(LoginActivity.this);
+								try {
+									fs.save(GlobalInfo.m_UserInfoFileName,
+											GlobalInfo.m_LoginAccount
+													+ GlobalInfo.m_SplitString
+													+ GlobalInfo.m_PersonName);
+								} catch (Exception exp1) {
+
+								}
+								//获取医院蓝牙设备地址
+								getHospitalMac();
+								String strSaved = "0";
+								if (cbxAutoLogin.isChecked()) {
+									strSaved = "1";
+								}
+
+								saveLoginInfo(LoginActivity.this,
+										GlobalInfo.m_LoginAccount, strPassword, strSaved);
+								handler.sendEmptyMessage(MESSAGETYPE_SUCCESS);
+							} else {
+								strResponse = strResponse.substring(
+										strResponse.indexOf("ERROR:") + 8,
+										strResponse.indexOf("ERROREND"));
+								Message msg = new Message();
+								msg.what = MESSAGETYPE_ERROR;
+								Bundle data = new Bundle();
+								data.putString("msg",strResponse);
+								msg.setData(data);
+								handler.sendMessage(msg);
+							}
+						} else {
+							handler.sendEmptyMessage(MESSAGETYPE_EXCEPTION);
+						}
+					} catch (IOException exception) {
+						Message msg = new Message();
+						msg.what = MESSAGETYPE_ERROR;
+						Bundle data = new Bundle();
+						data.putString("msg",exception.getMessage());
+						msg.setData(data);
+						handler.sendMessage(msg);
+					} catch (JSONException exception) {
+						Message msg = new Message();
+						msg.what = MESSAGETYPE_ERROR;
+						Bundle data = new Bundle();
+						data.putString("msg",exception.getMessage());
+						msg.setData(data);
+						handler.sendMessage(msg);
+					}catch (Exception exception) {
+						Message msg = new Message();
+						msg.what = MESSAGETYPE_ERROR;
+						Bundle data = new Bundle();
+						data.putString("msg",exception.getMessage());
+						msg.setData(data);
+						handler.sendMessage(msg);
+					}
+				}
+			});
 	}
+
 
 	public void testDelete(String strName) throws Exception {
 		// 根据姓名求id
@@ -482,6 +484,8 @@ public class LoginActivity extends Activity implements OnClickListener,
 					.setMessage("获取任务过程出现异常" + e.getMessage())
 					.setPositiveButton("确定", null).show();
 			return false;
+		}finally {
+			progressDialog.dismiss(); // 关闭进度条
 		}
 		return false;
 	}
@@ -525,7 +529,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btnLogin:
-			Login();
+			onLogin();
 			break;
 		case R.id.btnExit:
 			String str = tbxPassword.getText().toString();
@@ -538,71 +542,29 @@ public class LoginActivity extends Activity implements OnClickListener,
 	}
 
 	private Handler handler = new Handler() {
+		@Override
 		public void handleMessage(Message message) {
 			switch (message.what) {
 			case MESSAGETYPE_SUCCESS:
 				// 刷新UI，显示数据，并关闭进度条
+				if(progressDialog!=null)
 				progressDialog.dismiss(); // 关闭进度条
-				if (strResponse.startsWith("SUCCESS:")) {
-					strResponse = strResponse.substring(
-							strResponse.indexOf("SUCCESS:") + 8,
-							strResponse.indexOf("SUCCESSEND"));
-					String stra[] = strResponse.split(GlobalInfo.m_SplitString);
-					GlobalInfo.m_PropID = stra[0];
-					GlobalInfo.m_RoleCode = stra[1];
-					GlobalInfo.m_RoleName = stra[2];
-					GlobalInfo.m_PersonName = stra[3];
-					GlobalInfo.m_DeptName = stra[4];
-					GlobalInfo.m_DeptID = stra[5];
-					GlobalInfo.m_VerifyCode = stra[6];
-					GlobalInfo.m_OnOffDutyState = stra[7];
 
-					if (GlobalInfo.m_RoleCode.toLowerCase().equals(
-							"hosschedule")) {
-						// GetPhoneList();
-					}
-
-					FileService fs = new FileService(LoginActivity.this);
-					try {
-						fs.save(GlobalInfo.m_UserInfoFileName,
-								GlobalInfo.m_LoginAccount
-										+ GlobalInfo.m_SplitString
-										+ GlobalInfo.m_PersonName);
-					} catch (Exception exp1) {
-
-					}
-					String strSaved = "0";
-					if (cbxAutoLogin.isChecked()) {
-						strSaved = "1";
-					}
-
-					saveLoginInfo(LoginActivity.this,
-							GlobalInfo.m_LoginAccount, strPassword, strSaved);
-
-					Toast.makeText(getApplicationContext(), strPhone + " 登录成功",
+				Toast.makeText(getApplicationContext(), strPhone + " 登录成功",
 							Toast.LENGTH_SHORT).show();
-					Intent i = new Intent(LoginActivity.this,
+				Intent i = new Intent(LoginActivity.this,
 							TaskListActivity.class);
-					/*
-					 * if (GlobalInfo.m_RoleCode.toLowerCase().equals(
-					 * "hosschedule")) i = new Intent(LoginActivity.this,
-					 * MainMenuActivity.class);
-					 */
-					startActivity(i);
-				} else if (strResponse.startsWith("ERROR")) {
-					strResponse = strResponse.substring(
-							strResponse.indexOf("ERROR:") + 8,
-							strResponse.indexOf("ERROREND"));
-					new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-							.setMessage(strResponse)
-							.setPositiveButton("确定", null).show();
-				}
+				startActivity(i);
 				break;
 			case MESSAGETYPE_ERROR:
+				if(progressDialog!=null)
+					progressDialog.dismiss(); // 关闭进度条
 				new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-						.setMessage("错误").setPositiveButton("确定", null).show();
+						.setMessage("错误:"+message.getData().getString("msg")).setPositiveButton("确定", null).show();
 				break;
 			case MESSAGETYPE_EXCEPTION:
+				if(progressDialog!=null)
+					progressDialog.dismiss(); // 关闭进度条
 				new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
 						.setMessage("异常").setPositiveButton("确定", null).show();
 				break;

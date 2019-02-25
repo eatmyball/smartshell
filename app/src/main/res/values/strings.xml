@@ -2,7 +2,7 @@
 <resources>
 
     <string name="hello">Hello World, mainActivity!</string>
-    <string name="app_name">朗泰HTMS V1.03</string>
+    <string name="app_name">朗泰HTMS</string>
 
     <!-- BluetoothChat -->
     <string name="send">连接扫描设备</string>

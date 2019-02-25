@@ -20,7 +20,7 @@ public class GlobalInfo {
 
 	//TEST
 	static public String m_ServerIP = "115.159.188.190/htmwebtest";//
-	final static public String NEW_API_URL = "http://115.159.188.19bhtmwstest/" ;
+	final static public String NEW_API_URL = "http://115.159.188.190/htmwstest/" ;
 	//static public String m_ServerIP = "123.206.111.21/htmprd";
 	static public String m_barcodePrefix = "barcode:";
 	static public String m_LoginAccount;
@@ -31,6 +31,7 @@ public class GlobalInfo {
 	static public String m_DeptName;
 	static public String m_DeptID;
 	static public String m_DeptCode = "03023";
+	static public String m_HospitalCode;
 	static public String m_VerifyCode;
 	static public String m_PhoneNumber = "18618618601";
 	static public String m_SplitString = "fgf";
