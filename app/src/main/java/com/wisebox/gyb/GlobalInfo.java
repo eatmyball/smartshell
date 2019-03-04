@@ -16,11 +16,11 @@ public class GlobalInfo {
 	// static public String m_ServerIP = "192.168.1.104/htm";
 	// static public boolean b_SupportBluetooth = false;
 	//PROD
-//	static public String m_ServerIP = "3b53f1-0.sh.1251226507.clb.myqcloud.com/htmprd";// "129.100.250.99/htm";
-
+	static public String m_ServerIP = "info.liontown.cn/htmprd";//
+	final static public String NEW_API_URL = "http://info.liontown.cn/htmwsprd/" ;
 	//TEST
-	static public String m_ServerIP = "115.159.188.190/htmwebtest";//
-	final static public String NEW_API_URL = "http://115.159.188.190/htmwstest/" ;
+//	static public String m_ServerIP = "115.159.188.190/htmwebtest";
+//	final static public String NEW_API_URL = "http://115.159.188.190/htmwstest/" ;
 	//static public String m_ServerIP = "123.206.111.21/htmprd";
 	static public String m_barcodePrefix = "barcode:";
 	static public String m_LoginAccount;
@@ -42,7 +42,7 @@ public class GlobalInfo {
 	static public String m_UserInfoFileName = "Liontownuserinfo.txt";
 	static public String m_AdministratorBarcode = "LIONTOWN";
 	static public String m_APKID = "48";
-	static public String m_APKURL = "http://3b53f1-0.sh.1251226507.clb.myqcloud.com/htmprd/LiontownHTM.apk";
+	static public String m_APKURL = "http://info.liontown.cn/htmprd/LiontownHTM.apk";
 	// static public String m_APKURL =
 	// "http://apk.r1.market.hiapk.com/data/upload/2015/04_21/9/com.tencent.qqradio_092505.apk";
 	static public int m_nSplitLeft = 3;

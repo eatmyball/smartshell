@@ -654,7 +654,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 		if(response.isSuccessful()) {
 			String result = response.body().string();
 			String json = XmlParseUtil.getSoapResult(result, "GetMacAddressByHospitalCode");
-			Log.d("SOAP Result", "GetMacAddressByHospitalCode："+json);
+			Log.w("SOAP Result", "GetMacAddressByHospitalCode："+json);
 			if(!TextUtils.isEmpty(json)) {
 				Gson gson = new Gson();
 				MacAddrJson macData = gson.fromJson(json, MacAddrJson.class);
