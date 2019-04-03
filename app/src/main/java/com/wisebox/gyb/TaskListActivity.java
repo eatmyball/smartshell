@@ -5,18 +5,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -30,7 +26,6 @@ import org.json.JSONObject;
 
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
-import com.google.gson.JsonObject;
 import com.wisebox.gyb.BLE.BLEUtils;
 import com.wisebox.gyb.BLE.BleTimeTask;
 import com.wisebox.gyb.ScreenObserver.ScreenStateListener;
@@ -66,8 +61,6 @@ import android.view.View.OnKeyListener;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -118,9 +111,10 @@ public class TaskListActivity extends Activity implements OnClickListener {
 
 	private BleTimeTask myBleTask;
 
-	private String lastMac = "";
+	private String lastDepName = "";
 	private long lastReportTime; //上次上报蓝牙的时间
-	private long REPORT_INTERVAL = 2*60*1000; //同一个蓝牙2分钟更新一次
+	private static final long REPORT_INTERVAL = 2*60*1000; //同一个蓝牙2分钟更新一次
+	private static final int BLE_SENSTIVE = -92; //蓝牙信号敏感度
 	private List<BleDevice> sortCollection = new ArrayList<>();
 
 	// 申请设备电源锁
@@ -1738,16 +1732,16 @@ public class TaskListActivity extends Activity implements OnClickListener {
 						Log.w("BLE SCAN", "Ble sorted mac:"+ item.getMac()+" rssi:"+item.getRssi());
 					}
 					BleDevice result = sortCollection.get(0);
-					long current = System.currentTimeMillis();
-					//如果蓝牙和上次上传的蓝牙相同且时间小于2分钟，则不上报数据
-					if(result.getMac().equals(lastMac)&&((current - lastReportTime)<REPORT_INTERVAL)) {
-						return;
-					}else {
-						for (DeptMacJson item:MyApp.getHospitalMacList()) {
-							String itemMac = item.Mac;
-							if(itemMac.equals(result.getMac())) {
-								//记录该条数据
-								Log.w("BLE SCAN", "Ble report 科室:"+ item.PropName+" mac:"+item.Mac);
+					for (DeptMacJson item:MyApp.getHospitalMacList()) {
+						String itemMac = item.Mac;
+						//先判断蓝牙匹配科室
+						if(itemMac.equals(result.getMac())) {
+							Log.w("BLE SCAN", "Ble report 科室:"+ item.PropName+" mac:"+item.Mac);
+							long current = System.currentTimeMillis();
+							//如果科室和上次上传的科室相同且时间小于2分钟，则不上报数据
+							if(item.PropName.equals(lastDepName)&&((current - lastReportTime)<REPORT_INTERVAL)) {
+								return;
+							}else {
 								reportMac(item);
 							}
 						}
@@ -1768,12 +1762,16 @@ public class TaskListActivity extends Activity implements OnClickListener {
 			public void onScanning(BleDevice bleDevice) {
 				Log.w("BLE SCAN", "Ble discovered mac"+bleDevice.getMac()+" rssi:"+bleDevice.getRssi() +" "+getCurrentTime("HH:mm:ss"));
 				String mac = bleDevice.getMac();
+				int rssi = bleDevice.getRssi();
 				for (DeptMacJson item:MyApp.getHospitalMacList()) {
 					String itemMac = item.Mac;
 					//上报已匹配的蓝牙地址，且蓝牙信息不能为上次已经上报过的。
 					if(itemMac.equals(mac)) {
-						Log.w("BLE SCAN", "BLE mapped:"+mac);
-						sortCollection.add(bleDevice);
+						Log.w("BLE SCAN", "BLE mapped:"+mac+" rrsi:"+ rssi);
+						//只取有效蓝牙
+						if(rssi >= BLE_SENSTIVE) {
+							sortCollection.add(bleDevice);
+						}
 					}
 				}
 			}
@@ -1798,7 +1796,7 @@ public class TaskListActivity extends Activity implements OnClickListener {
 			if(response.isSuccessful()) {
 				Log.w("REPORT","MAC info commit success!!");
 				//记录最后一次上报过的蓝牙地址
-				lastMac = macJson.Mac;
+				lastDepName = macJson.PropName;
 				lastReportTime = System.currentTimeMillis();
 			}
 		}catch (JSONException exception) {

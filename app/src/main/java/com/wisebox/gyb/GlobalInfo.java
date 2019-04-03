@@ -18,6 +18,8 @@ public class GlobalInfo {
 	//PROD
 	static public String m_ServerIP = "info.liontown.cn/htmprd";//
 	final static public String NEW_API_URL = "http://info.liontown.cn/htmwsprd/" ;
+//	static public String m_ServerIP = "happyship.wisebox.com.cn/htmprd";//
+//	final static public String NEW_API_URL = "http://happyship.wisebox.com.cn/htmwsprd/" ;
 	//TEST
 //	static public String m_ServerIP = "115.159.188.190/htmwebtest";
 //	final static public String NEW_API_URL = "http://115.159.188.190/htmwstest/" ;

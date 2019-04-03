@@ -222,18 +222,17 @@ public class LoginActivity extends Activity implements OnClickListener,
 
 	private void onLogin() {
 
-//		try {
-//			strPhone = testReadAll("0本机");
-//		} catch (Exception exp1) {
-//			new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
-//					.setMessage("异常:" + exp1.getMessage()).setPositiveButton("确定", null).show();
-//		}
-//		if (strPhone.length() == 0) {
-//			strPhone = "";
-//		}else {
-//			strPhone = strPhone.replace(" ", "");
-//		}
-		strPhone = "";
+		try {
+			strPhone = testReadAll("0本机");
+		} catch (Exception exp1) {
+			new AlertDialog.Builder(LoginActivity.this).setTitle("确认")
+					.setMessage("异常:" + exp1.getMessage()).setPositiveButton("确定", null).show();
+		}
+		if (strPhone.length() == 0) {
+			strPhone = "";
+		}else {
+			strPhone = strPhone.replace(" ", "");
+		}
 		GlobalInfo.m_LoginAccount = ((EditText) LoginActivity.this
 				.findViewById(R.id.tbxAccount)).getText().toString();
 		strPassword = ((EditText) LoginActivity.this

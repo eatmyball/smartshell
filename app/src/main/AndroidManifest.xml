@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.wisebox.gyb"
-    android:versionCode="88"
-    android:versionName="19.03.04">
+    android:versionCode="93"
+    android:versionName="19.03.15">
 
     <uses-sdk
         android:minSdkVersion="16"
